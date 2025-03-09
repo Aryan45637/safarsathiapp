@@ -1,19 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import {
+    StyleSheet, View, Text, TouchableOpacity, Alert, Image, Modal, TextInput
+} from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { GOOGLE_MAP_KEY } from '../constant/googlemapkey';
 import MapViewDirections from 'react-native-maps-directions';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Destination({ route }) {
-    const fromcord = route?.params?.fromcord;
+    const navigation = useNavigation();
+    const fromcord = route?.params?.fromcord || { latitude: 37.78825, longitude: -122.4324 };
     const [location, setLocation] = useState(null);
     const [distance, setDistance] = useState(null);
     const [duration, setDuration] = useState(null);
+    const [busLocations, setBusLocations] = useState([]);
+    const [destinationSelected, setDestinationSelected] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [destinationText, setDestinationText] = useState("Your Destination");
 
+    // Fetch Nearby Buses API
     useEffect(() => {
-        if (fromcord && location && GOOGLE_MAP_KEY) {
+        if (fromcord) {
+            fetch(`http://192.168.111.6:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        const validBuses = data.filter(bus => bus.latitude && bus.longitude);
+                        setBusLocations(validBuses);
+                    }
+                })
+                .catch(error => console.error("❌ Error fetching bus location:", error));
+        }
+    }, [fromcord]);
+    
+
+    // Fetch Distance & Duration API
+    useEffect(() => {
+        if (fromcord && location) {
             const origin = `${fromcord.latitude},${fromcord.longitude}`;
             const destination = `${location.latitude},${location.longitude}`;
             const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destination}&key=${GOOGLE_MAP_KEY}`;
@@ -21,45 +45,58 @@ export default function Destination({ route }) {
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === "OK") {
+                    if (data.status === "OK" && data.rows[0].elements[0].status === "OK") {
                         const element = data.rows[0].elements[0];
                         setDistance(element.distance.text);
                         setDuration(element.duration.text);
-                        console.log(`Distance: ${element.distance.text}, Duration: ${element.duration.text}`);
-                    } else {
-                        console.error("Error fetching distance:", data.status);
                     }
                 })
-                .catch(error => console.error("Error:", error));
+                .catch(error => console.error("❌ Error:", error));
         }
     }, [fromcord, location]);
 
+    // Open Nearby Buses Page
+    const handleSubmit = () => {
+        if (location) {
+           
+            navigation.navigate("Nearbybuses", { 
+                userLatitude: fromcord.latitude, 
+                userLongitude: fromcord.longitude, 
+                destinationLatitude: location.latitude, 
+                destinationLongitude: location.longitude, 
+
+                locationdistance:distance, 
+                duration 
+            });
+            // console.log(fromcord.latitude,fromcord.longitude,location.latitude,location.longitude)
+            // console.log(location.latitude,location.longitude)
+        } else {
+            Alert.alert("🚨 Error", "Please select a location first.");
+        }
+    };
+    
+
     return (
         <View style={styles.container}>
+            {/* Map Section */}
             <View style={styles.mapContainer}>
                 <MapView
                     style={styles.map}
                     initialRegion={{
-                        latitude: fromcord?.latitude ?? 37.78825,
-                        longitude: fromcord?.longitude ?? -122.4324,
+                        latitude: fromcord.latitude,
+                        longitude: fromcord.longitude,
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     }}
-                    onPress={(event) => {
-                        const { latitude, longitude } = event.nativeEvent.coordinate;
-                        setLocation({ latitude, longitude });
-                    }}
                 >
-                    {/* Marker for Start Location */}
-                    {fromcord && (
-                        <Marker
-                            coordinate={{ latitude: fromcord.latitude, longitude: fromcord.longitude }}
-                            title="Start Location"
-                            pinColor="blue"
-                        />
-                    )}
+                    {/* Start Location Marker */}
+                    <Marker
+                        coordinate={{ latitude: fromcord.latitude, longitude: fromcord.longitude }}
+                        title="Start Location"
+                        pinColor="blue"
+                    />
 
-                    {/* Marker for Destination */}
+                    {/* Destination Marker */}
                     {location && (
                         <Marker
                             coordinate={{ latitude: location.latitude, longitude: location.longitude }}
@@ -68,8 +105,23 @@ export default function Destination({ route }) {
                         />
                     )}
 
-                    {/* Directions */}
-                    {fromcord && location && GOOGLE_MAP_KEY && (
+                    {/* Bus Markers */}
+                    {busLocations.map((bus, index) => (
+                        <Marker
+                            key={index}
+                            coordinate={{ latitude: bus.latitude, longitude: bus.longitude }}
+                            title="Bus Location"
+                        >
+                            <Image
+                                source={require('../../assets/icons/bus.png')}
+                                style={{ width: 40, height: 40 }}
+                                resizeMode="contain"
+                            />
+                        </Marker>
+                    ))}
+
+                    {/* Route between Start and Destination */}
+                    {location && (
                         <MapViewDirections
                             origin={fromcord}
                             destination={location}
@@ -80,106 +132,79 @@ export default function Destination({ route }) {
                         />
                     )}
                 </MapView>
+            </View>
 
-                {/* Menu Icon */}
-                <View style={styles.start}>
-                    <View style={styles.menuIcon}>
-                        <Ionicons name="menu" size={25} color="#808080" />
+            {/* Bottom Section */}
+            <View style={styles.bottomContainer}>
+                <Text style={styles.heading}>Nearby Buses</Text>
+
+                {/* Destination Input Field */}
+                <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.destinationInput}>
+                    <Text style={styles.inputText}>{destinationText}</Text>
+                    
+                </TouchableOpacity>
+
+                {/* Distance & Duration Display */}
+                {destinationSelected && distance && duration && (
+                    <View style={styles.distanceContainer}>
+                        <Text style={styles.text}>Distance: {distance}</Text>
+                        <Text style={styles.text}>Duration: {duration}</Text>
                     </View>
-                </View>
+                )}
+
+                {/* Button to View Nearby Buses */}
+                <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+                    <Text style={styles.buttonText}>View Nearby Buses</Text>
+                </TouchableOpacity>
             </View>
 
-            {/* Search Box */}
-            <View style={styles.textContainer}>
-                <Text style={styles.text}>Nearby Buses</Text>
-                <View style={styles.line} />
-                <GooglePlacesAutocomplete
-                    fetchDetails={true}
-                    placeholder="Enter Destination"
-                    styles={{
-                        textInputContainer: {
-                            width: "100%",
-                            padding: 5,
-                            marginLeft: 5,
-                            marginRight: 5,
-                        },
-                        textInput: {
-                            color: "#5d5d5d",
-                            fontSize: 16,
-                        },
-                        predefinedPlacesDescription: {
-                            color: "#1faadb",
-                        },
-                    }}
-                    onPress={(data, details = null) => {
-                        if (details) {
-                            const { lat, lng } = details.geometry.location;
-                            setLocation({ latitude: lat, longitude: lng });
-                        }
-                    }}
-                    query={{
-                        key: GOOGLE_MAP_KEY,
-                        language: 'en',
-                    }}
-                />
-            </View>
+            {/* Modal for Google Places Autocomplete */}
+            <Modal visible={modalVisible} animationType="slide" transparent>
+                <View style={styles.modalContainer}>
+                    <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                        <Text style={styles.closeText}>X</Text>
+                    </TouchableOpacity>
 
-            {/* Distance and Duration Display */}
-            {distance && duration && (
-                <View style={styles.distanceContainer}>
-                    <Text style={styles.text}>Distance: {distance}</Text>
-                    <Text style={styles.text}>Duration: {duration}</Text>
+                    <GooglePlacesAutocomplete
+                        fetchDetails={true}
+                        placeholder="Search for a destination"
+                        onPress={(data, details = null) => {
+                            if (details) {
+                                setLocation({
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng,
+                                });
+                                setDestinationText(data.description);
+                                setDestinationSelected(true);
+                                setModalVisible(false);
+                            }
+                        }}
+                        query={{ key: GOOGLE_MAP_KEY, language: 'en' }}
+                        styles={{
+                            textInput: styles.searchInput,
+                        }}
+                    />
                 </View>
-            )}
+            </Modal>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    mapContainer: {
-        flex: 0.6,
-    },
-    map: {
-        width: '100%',
-        height: '100%',
-    },
-    menuIcon: {
-        height: 40,
-        width: 40,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 5,
-    },
-    textContainer: {
-        flex: 0.4,
-        marginTop: 10,
-        alignItems: 'center',
-    },
-    text: {
-        color: '#808080',
-        fontSize: 16,
-    },
-    line: {
-        height: 1,
-        backgroundColor: '#808080',
-        width: '100%',
-        marginVertical: 10,
-    },
-    start: {
-        position: 'absolute',
-        marginLeft: 10,
-        marginTop: 20,
-        flexDirection: 'row',
-        gap: 15,
-    },
-    distanceContainer: {
-        alignItems: 'center',
-        marginVertical: 10,
-    },
+    container: { flex: 1 },
+    mapContainer: { flex: 0.7 },
+    map: { width: '100%', height: '100%' },
+    bottomContainer: { flex: 0.3, padding: 15, backgroundColor: '#f7f7f7' },
+    heading: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 , marginLeft:100 },
+    destinationInput: { flexDirection: 'row', backgroundColor: '#fff', padding: 10, borderRadius: 10 },
+    inputText: { flex: 1, fontSize: 16,alignItems:'center'},
+    button: { backgroundColor: '#007bff', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 20 , width:"100%"},
+    buttonText: { color: 'white', fontSize: 16 },
+    modalContainer: { flex: 1, backgroundColor: 'white', padding: 20 },
+    closeButton: { alignSelf: 'flex-end', padding: 10 },
+    closeText: { fontSize: 20, fontWeight: 'bold' },
+    searchInput: { fontSize: 16, padding: 10, borderBottomWidth: 1, borderColor: 'gray' },
+    text:{fontSize:16,fontWeight:'bold', color: '#808080'},
+    distanceContainer:{marginTop:30}
 });
 

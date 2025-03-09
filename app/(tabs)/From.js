@@ -1,15 +1,43 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { GOOGLE_MAP_KEY } from "../constant/googlemapkey";
+import * as Location from 'expo-location';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
-const uniqueId = uuidv4();
-
 const From = ({ navigation }) => {
     const [location, setLocation] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const googlePlacesRef = useRef();
+
+    // Function to get the user's current location
+    const getCurrentLocation = async () => {
+        setLoading(true);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            alert("Permission to access location was denied.");
+            setLoading(false);
+            return;
+        }
+
+        let loc = await Location.getCurrentPositionAsync({});
+        const coords = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude
+        };
+
+        setLocation(coords);
+        setLoading(false);
+
+        // Use reverse geocoding to get the location name
+        let reverseGeocode = await Location.reverseGeocodeAsync(coords);
+        if (reverseGeocode.length > 0) {
+            let placeName = `${reverseGeocode[0].name}, ${reverseGeocode[0].city}`;
+            googlePlacesRef.current?.setAddressText(placeName);
+        }
+    };
 
     const handleSubmit = () => {
         if (location) {
@@ -25,14 +53,17 @@ const From = ({ navigation }) => {
                 <Ionicons name="menu" size={25} color="#808080" />
             </View>
 
+            {/* Google Places Input */}
             <GooglePlacesAutocomplete
+                ref={googlePlacesRef}
                 fetchDetails={true}
-                placeholder="Nearest Station"
+                placeholder="Enter location"
                 styles={{
                     textInputContainer: {
                         borderWidth: 1,
-                        borderRadius: 0,
+                        borderRadius: 8,
                         borderBlockColor: "#808080",
+                        marginBottom: 10,
                     },
                     textInput: {
                         color: "#5d5d5d",
@@ -44,18 +75,35 @@ const From = ({ navigation }) => {
                 }}
                 onPress={(data, details = null) => {
                     if (details) {
-                        const { lat, lng } = details.geometry.location;  // Use 'lat' and 'lng' here
-                        setLocation({ latitude: lat, longitude: lng });
-                        console.log("Selected Coordinates:", lat, lng);
+                        setLocation({
+                            latitude: details.geometry.location.lat,
+                            longitude: details.geometry.location.lng,
+                        });
                     }
                 }}
-                
                 query={{
                     key: GOOGLE_MAP_KEY,
                     language: 'en',
                 }}
             />
 
+            {/* Use My Location Button */}
+            <TouchableOpacity 
+                style={styles.locationButton} 
+                onPress={getCurrentLocation}
+                disabled={loading}
+            >
+                {loading ? (
+                    <ActivityIndicator size="small" color="white" />
+                ) : (
+                    <>
+                        <Ionicons name="locate" size={18} color="white" />
+                        <Text style={styles.buttonText}>Use My Location</Text>
+                    </>
+                )}
+            </TouchableOpacity>
+
+            {/* Submit Button */}
             <TouchableOpacity onPress={handleSubmit} style={styles.button}>
                 <Text style={styles.buttonText}>Go to Destination</Text>
             </TouchableOpacity>
@@ -83,16 +131,26 @@ const styles = StyleSheet.create({
         alignItems: "center",
         elevation: 5,
     },
+    locationButton: {
+        flexDirection: "row",
+        backgroundColor: "green",
+        padding: 10,
+        borderRadius: 8,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 10,
+    },
     button: {
         backgroundColor: "blue",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 20,
+        marginTop: 10,
     },
     buttonText: {
         color: "white",
         fontSize: 16,
         fontWeight: "bold",
+        marginLeft: 8,
     },
 });
