@@ -41,7 +41,7 @@ const From = ({ navigation }) => {
 
     const handleSubmit = () => {
         if (location) {
-            navigation.navigate("destination", { fromcord: location });
+            navigation.navigate("Destination", { fromcord: location });
         } else {
             alert("Please select a location first.");
         }
@@ -49,9 +49,7 @@ const From = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.menuIcon}>
-                <Ionicons name="menu" size={25} color="#808080" />
-            </View>
+            
 
             {/* Google Places Input */}
             <GooglePlacesAutocomplete
@@ -146,6 +144,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: "center",
         marginTop: 10,
+        marginBottom:50,
     },
     buttonText: {
         color: "white",

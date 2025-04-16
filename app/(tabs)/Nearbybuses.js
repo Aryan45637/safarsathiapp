@@ -25,7 +25,7 @@ const BusListScreen = ({ route, navigation }) => {
   // ✅ Fetch Nearby Buses
   const fetchNearbyBuses = async () => {
     try {
-      const apiUrl = "http://192.168.111.6:8080/users/nearby";
+      const apiUrl = "http://192.168.91.6:8080/users/nearby";
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Enable location to proceed.");
@@ -96,6 +96,10 @@ const BusListScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       {loading ? (
         <ActivityIndicator size="large" color="blue" />
+      ) : buses.length === 0 ? (
+        <View style={styles.noBusesContainer}>
+          <Text style={styles.noBusesText}>🚍 No buses available</Text>
+        </View>
       ) : (
         <FlatList
           data={buses}
@@ -103,7 +107,7 @@ const BusListScreen = ({ route, navigation }) => {
           renderItem={({ item }) => {
             const distance = parseFloat(locationdistance);
             const fare = isNaN(distance) ? "0.00" : (distance * FARE_PER_KM).toFixed(2);
-
+  
             return (
               <TouchableOpacity
                 onPress={() => {
@@ -124,24 +128,20 @@ const BusListScreen = ({ route, navigation }) => {
                 }}
                 style={styles.card}
               >
-
-
                 <Image source={require("../../assets/icons/bus.png")} style={styles.busIcon} />
                 <View style={styles.busDetails}>
                   <Text style={styles.busText}>{item.busNo}</Text>
-
-                  {/* ✅ ETA Display: Shows "Arrived" if ETA is 0 */}
+  
                   {item.eta > 0 ? (
                     <Text style={styles.infoText}>Arrives at: {formatArrivalTime(item.eta)}</Text>
                   ) : (
                     <Text style={styles.arrivedText}>🚍 Arrived</Text>
                   )}
-
+  
                   <Text style={styles.seatText}>
                     🪑 {Math.max(60 + item.availableSeats, 0)}{" "}
                     {60 + item.availableSeats <= 0 ? "(Currently Bus has no seats)" : ""}
                   </Text>
-
                 </View>
                 <Text style={styles.fareText}>Fare: ₹{fare}</Text>
               </TouchableOpacity>
@@ -151,6 +151,7 @@ const BusListScreen = ({ route, navigation }) => {
       )}
     </View>
   );
+  
 };
 
 // ✅ Styles for UI

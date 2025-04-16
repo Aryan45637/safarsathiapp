@@ -52,13 +52,13 @@ const BusDetailScreen = ({ route }) => {
         }
     };
 
-    // ✅ Fetch City Names on Component Mount
+    //  Fetch City Names on Component Mount
     useEffect(() => {
         fetchCityName(userLatitude, userLongitude, setFromCity);
         fetchCityName(destinationLatitude, destinationLongitude, setToCity);
     }, []);
 
-    // ✅ Calculate Arrival Time
+    //  Calculate Arrival Time
     const calculateArrivalTime = (eta) => {
         const now = new Date();
         now.setMinutes(now.getMinutes() + eta);

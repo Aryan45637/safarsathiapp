@@ -22,7 +22,7 @@ export default function Destination({ route }) {
     // Fetch Nearby Buses API
     useEffect(() => {
         if (fromcord) {
-            fetch(`http://192.168.111.6:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
+            fetch(`http://192.168.91.6:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
                 .then(response => response.json())
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0) {
