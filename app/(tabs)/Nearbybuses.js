@@ -25,7 +25,7 @@ const BusListScreen = ({ route, navigation }) => {
   // ✅ Fetch Nearby Buses
   const fetchNearbyBuses = async () => {
     try {
-      const apiUrl = "http://192.168.91.6:8080/users/nearby";
+      const apiUrl = "http://192.168.211.234:8080/users/nearby";
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Enable location to proceed.");
