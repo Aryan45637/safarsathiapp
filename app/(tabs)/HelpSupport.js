@@ -45,11 +45,7 @@ const HelpSupport = () => {
       answer: "Go to the 'Live Map' section and enter your bus number to view real-time location.",
     },
     {
-      question: '2. I lost an item. What should I do?',
-      answer: "Use the 'Lost & Found' feature in the app to report and search for your lost item.",
-    },
-    {
-      question: '3. How can I report a problem with the app?',
+      question: '2. How can I report a problem with the app?',
       answer: "Scroll down to the 'Contact Us' section and send us an email or call our support line.",
     },
   ];
