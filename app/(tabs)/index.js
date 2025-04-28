@@ -1,22 +1,27 @@
-import React from "react";
-import { TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { usestate ,TouchableOpacity } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
 
+
 // Screens
 import From from "./From";
 import Destination from "./Destination";
 import Nearbybuses from "./Nearbybuses";
 import BusDetails from "./BusDetails";
-import EmergencyScreen from "./EmergenctScreen";
-import Settings from "./Settings";
+import EmergencyScreen from "./EmergencyScreen";
+import About from "./About";
 import HelpSupport from "./HelpSupport";
+import Splash from "./SplashScreen";
+import Privacypolicy from './Privacypolicy';
+import ReportIssue from './ReportIssue';
+import RateUs from './RateUs';
 
-const ReportIssue = () => <></>;
-const RateUs = () => <></>;
+// const ReportIssue = () => <></>;
+// const RateUs = () => <></>;
 
 // 🔁 Drawer Toggle Icon
 const DrawerToggle = () => {
@@ -53,13 +58,7 @@ function FromWithDrawer() {
           drawerIcon: ({ color, size }) => <Ionicons name="call-outline" size={size} color={color} />,
         }}
       />
-      <Drawer.Screen
-        name="Settings"
-        component={Settings}
-        options={{
-          drawerIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />,
-        }}
-      />
+      
       <Drawer.Screen
         name="Report Issue"
         component={ReportIssue}
@@ -74,6 +73,20 @@ function FromWithDrawer() {
           drawerIcon: ({ color, size }) => <FontAwesome name="star-o" size={size} color={color} />,
         }}
       />
+      <Drawer.Screen
+        name="About Us"
+        component={About}
+        options={{
+          drawerIcon: ({ color, size }) => <Ionicons name="information-circle-outline" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="Privacy & Policy"
+        component={Privacypolicy}
+        options={{
+          drawerIcon: ({ color, size }) => <MaterialIcons name="privacy-tip" size={size} color={color} />,
+        }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -83,14 +96,17 @@ const HomeStack = createStackNavigator();
 function HomeFlow() {
   return (
     <HomeStack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
+       {/* <HomeStack.Screen name="Splash" component={Splash} options ={{headerShown: false }} /> */}
       <HomeStack.Screen
         name="HomeDrawer"
         component={FromWithDrawer}
         options={{ headerShown: false }}
       />
+     
       <HomeStack.Screen name="Destination" component={Destination} />
       <HomeStack.Screen name="Nearbybuses" component={Nearbybuses} options={{ title: "Nearby Buses" }} />
       <HomeStack.Screen name="BusDetails" component={BusDetails} options={{ title: "Bus Details" }} />
+      <HomeStack.Screen name ="EmergencyScreen" component={EmergencyScreen}/>
     </HomeStack.Navigator>
   );
 }
@@ -134,12 +150,20 @@ function MainTabs() {
     </Tab.Navigator>
   );
 }
-
-// ✅ App Entry
 export default function App() {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
+  useEffect(() => {
+    // Hide the splash screen after 3 seconds
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 3000); // Match this time to your splash duration
+
+    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  }, []);
+
   return (
-    //<NavigationContainer>
-      <MainTabs />
-    //</NavigationContainer>
+
+      isSplashVisible ? <Splash/> : <MainTabs />
   );
 }

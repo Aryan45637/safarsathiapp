@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native'; // ✅ Add this
-import EmergencyScreen from './EmergenctScreen';
+import EmergencyScreen from './EmergencyScreen';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -36,7 +36,8 @@ const HelpSupport = () => {
   };
 
   const handleEmergency = () => {
-    navigation.navigate('Emergency');
+    navigation.navigate('EmergencyScreen');
+
   };
 
   const faqData = [
