@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import React, { useEffect, useState, useLayoutEffect } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
-import { GOOGLE_MAP_KEY } from "../constant/googlemapkey"; // Ensure you have your API Key
+import { useNavigation } from "@react-navigation/native";
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
 
 const BusDetailScreen = ({ route }) => {
+    const navigation = useNavigation();
     const {
         busNo,
         latitude,
@@ -17,14 +20,24 @@ const BusDetailScreen = ({ route }) => {
         eta,
         distance
     } = route.params;
-    // console.log(destinationLat,destinationLon)
-    console.log("🚀 Route Params:", route.params);
-
 
     const [fromCity, setFromCity] = useState("Fetching...");
     const [toCity, setToCity] = useState("Fetching...");
 
-    // ✅ Function to Fetch City Name from Coordinates
+    // 🔁 Set header button for sharing
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <TouchableOpacity
+                    style={{ marginRight: 15 }}
+                    onPress={() => navigation.navigate("ShareJourney", { ...route.params })}
+                >
+                    <Text style={{ color: "#007BFF", fontWeight: "bold" }}>Share</Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
+
     const fetchCityName = async (latitude, longitude, setCity) => {
         try {
             const response = await fetch(
@@ -52,13 +65,11 @@ const BusDetailScreen = ({ route }) => {
         }
     };
 
-    //  Fetch City Names on Component Mount
     useEffect(() => {
         fetchCityName(userLatitude, userLongitude, setFromCity);
         fetchCityName(destinationLatitude, destinationLongitude, setToCity);
     }, []);
 
-    //  Calculate Arrival Time
     const calculateArrivalTime = (eta) => {
         const now = new Date();
         now.setMinutes(now.getMinutes() + eta);
@@ -102,7 +113,6 @@ const BusDetailScreen = ({ route }) => {
                     <Text style={styles.busNumber}>{busNo}</Text>
                 </View>
 
-                {/* ✅ Display City Names */}
                 <Text style={styles.routeText}>From: {fromCity}</Text>
                 <Text style={styles.routeText}>To: {toCity}</Text>
                 <Text style={styles.routeText}>
@@ -110,14 +120,12 @@ const BusDetailScreen = ({ route }) => {
                     {60 + availableSeats <= 0 ? "(Currently Bus has no seats)" : ""}
                 </Text>
 
-                {/* <Text style={styles.routeText}>Distance: {distance} km</Text> */}
                 <Text style={styles.fareText}>Fare Charges: ₹{fare}</Text>
             </View>
         </View>
     );
 };
 
-// ✅ Styles
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "white" },
     map: { flex: 1 },
