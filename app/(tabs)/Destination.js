@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-    StyleSheet, View, Text, TouchableOpacity, Alert, Image, Modal, TextInput
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Image, Modal } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { GOOGLE_MAP_KEY } from '../constant/googlemapkey';
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
 import MapViewDirections from 'react-native-maps-directions';
 import { useNavigation } from '@react-navigation/native';
 
@@ -19,10 +18,10 @@ export default function Destination({ route }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [destinationText, setDestinationText] = useState("Your Destination");
 
-    // Fetch Nearby Buses API
+    // Fetch Nearby Buses API from backend (MongoDB Atlas now)
     useEffect(() => {
         if (fromcord) {
-            fetch(`http://192.168.1.114:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
+            fetch(`http://<YOUR_SERVER_IP>:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
                 .then(response => response.json())
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0) {
@@ -33,7 +32,6 @@ export default function Destination({ route }) {
                 .catch(error => console.error("❌ Error fetching bus location:", error));
         }
     }, [fromcord]);
-    
 
     // Fetch Distance & Duration API
     useEffect(() => {
@@ -58,23 +56,18 @@ export default function Destination({ route }) {
     // Open Nearby Buses Page
     const handleSubmit = () => {
         if (location) {
-           
-            navigation.navigate("Nearbybuses", { 
-                userLatitude: fromcord.latitude, 
-                userLongitude: fromcord.longitude, 
-                destinationLatitude: location.latitude, 
-                destinationLongitude: location.longitude, 
-
-                locationdistance:distance, 
-                duration 
+            navigation.navigate("Nearbybuses", {
+                userLatitude: fromcord.latitude,
+                userLongitude: fromcord.longitude,
+                destinationLatitude: location.latitude,
+                destinationLongitude: location.longitude,
+                locationdistance: distance,
+                duration
             });
-            // console.log(fromcord.latitude,fromcord.longitude,location.latitude,location.longitude)
-            // console.log(location.latitude,location.longitude)
         } else {
             Alert.alert("🚨 Error", "Please select a location first.");
         }
     };
-    
 
     return (
         <View style={styles.container}>
@@ -141,7 +134,6 @@ export default function Destination({ route }) {
                 {/* Destination Input Field */}
                 <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.destinationInput}>
                     <Text style={styles.inputText}>{destinationText}</Text>
-                    
                 </TouchableOpacity>
 
                 {/* Distance & Duration Display */}
@@ -195,16 +187,15 @@ const styles = StyleSheet.create({
     mapContainer: { flex: 0.7 },
     map: { width: '100%', height: '100%' },
     bottomContainer: { flex: 0.3, padding: 15, backgroundColor: '#f7f7f7' },
-    heading: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 , marginLeft:100 },
+    heading: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, marginLeft: 100 },
     destinationInput: { flexDirection: 'row', backgroundColor: '#fff', padding: 10, borderRadius: 10 },
-    inputText: { flex: 1, fontSize: 16,alignItems:'center'},
-    button: { backgroundColor: '#007bff', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 20 , width:"100%"},
+    inputText: { flex: 1, fontSize: 16, alignItems: 'center' },
+    button: { backgroundColor: '#007bff', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 20, width: "100%" },
     buttonText: { color: 'white', fontSize: 16 },
-    modalContainer: { flex: 1, backgroundColor: 'white', padding: 20 },
-    closeButton: { alignSelf: 'flex-end', padding: 10 },
-    closeText: { fontSize: 20, fontWeight: 'bold' },
-    searchInput: { fontSize: 16, padding: 10, borderBottomWidth: 1, borderColor: 'gray' },
-    text:{fontSize:16,fontWeight:'bold', color: '#808080'},
-    distanceContainer:{marginTop:30}
+    modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+    closeButton: { position: 'absolute', top: 50, right: 50, backgroundColor: '#fff', padding: 10, borderRadius: 50 },
+    closeText: { fontSize: 18, fontWeight: 'bold' },
+    searchInput: { padding: 10, borderRadius: 10, backgroundColor: '#fff' },
+    distanceContainer: { marginTop: 10 },
+    text: { fontSize: 16 },
 });
-

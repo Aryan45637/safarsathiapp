@@ -19,6 +19,7 @@ import Splash from "./SplashScreen";
 import Privacypolicy from './Privacypolicy';
 import ReportIssue from './ReportIssue';
 import RateUs from './RateUs';
+import ShareJourney from './ShareJourney';
 
 // const ReportIssue = () => <></>;
 // const RateUs = () => <></>;
@@ -107,6 +108,7 @@ function HomeFlow() {
       <HomeStack.Screen name="Nearbybuses" component={Nearbybuses} options={{ title: "Nearby Buses" }} />
       <HomeStack.Screen name="BusDetails" component={BusDetails} options={{ title: "Bus Details" }} />
       <HomeStack.Screen name ="EmergencyScreen" component={EmergencyScreen}/>
+      <HomeStack.Screen name ="ShareJourney" component={ShareJourney}/>
     </HomeStack.Navigator>
   );
 }
