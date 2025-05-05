@@ -4,9 +4,11 @@ import {
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { GOOGLE_MAP_KEY } from '../constant/googlemapkey';
 import MapViewDirections from 'react-native-maps-directions';
 import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
+const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 
 export default function Destination({ route }) {
     const navigation = useNavigation();
@@ -22,7 +24,7 @@ export default function Destination({ route }) {
     // Fetch Nearby Buses API
     useEffect(() => {
         if (fromcord) {
-            fetch(`http://192.168.1.114:8080/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
+            fetch(`${BASE_URL}/users/nearby?latitude=${fromcord.latitude}&longitude=${fromcord.longitude}&radius=30`)
                 .then(response => response.json())
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0) {

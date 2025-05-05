@@ -38,12 +38,12 @@ const About = () => {
 
       <View style={styles.developerCard}>
         <Text style={styles.developerName}>Ayushi Tiwari</Text>
-        <Text style={styles.developerEmail}>jane.smith@example.com</Text>
+        <Text style={styles.developerEmail}>tayushi204@gmail.com</Text>
       </View>
 
       <View style={styles.developerCard}>
         <Text style={styles.developerName}>Kriti Singh</Text>
-        <Text style={styles.developerEmail}>jane.smith@example.com</Text>
+        <Text style={styles.developerEmail}>kritisin2842@gmail.com</Text>
       </View>
 
       {/* Add more developers here if needed */}

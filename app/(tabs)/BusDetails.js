@@ -1,9 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import React, { useEffect, useState , useLayoutEffect } from "react";
+import { View, Text, StyleSheet, Image , TouchableOpacity} from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
-import { GOOGLE_MAP_KEY } from "../constant/googlemapkey"; // Ensure you have your API Key
+import MapViewDirections from 'react-native-maps-directions';
+import { useNavigation } from "@react-navigation/native";
+
+
+// import React, { useEffect, useState, useLayoutEffect } from "react";
+
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
+const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+
+
+
 
 const BusDetailScreen = ({ route }) => {
+    const navigation = useNavigation();
     const {
         busNo,
         latitude,
@@ -23,6 +35,19 @@ const BusDetailScreen = ({ route }) => {
 
     const [fromCity, setFromCity] = useState("Fetching...");
     const [toCity, setToCity] = useState("Fetching...");
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <TouchableOpacity
+                    style={{ marginRight: 15 }}
+                    onPress={() => navigation.navigate("ShareJourney", { ...route.params })}
+                >
+                    <Text style={{ color: "#007BFF", fontWeight: "bold" }}>Share</Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
 
     // ✅ Function to Fetch City Name from Coordinates
     const fetchCityName = async (latitude, longitude, setCity) => {
@@ -77,15 +102,31 @@ const BusDetailScreen = ({ route }) => {
                     longitudeDelta: 0.05,
                 }}
             >
-                <Marker coordinate={{ latitude, longitude }}>
-                    <Image source={require("../../assets/icons/bus.png")} style={styles.busIcon} />
+                <Marker
+                    coordinate={{ latitude: userLatitude, longitude: userLongitude }}
+                    title="Start Location"
+                    pinColor="blue"
+                />
+
+                {/* Destination Marker with Image */}
+                <Marker
+                    coordinate={{ latitude: latitude, longitude: longitude }}
+                    title="Destination"
+                >
+                    <Image
+                        source={require("../../assets/icons/bus.png")}
+                        style={styles.busIcon}
+                    />
                 </Marker>
                 <Marker coordinate={{ latitude: userLatitude, longitude: userLongitude }} />
-                <Polyline
-                    coordinates={[{ latitude, longitude }, { latitude: userLatitude, longitude: userLongitude }]}
-                    strokeColor="#6c63ff"
-                    strokeWidth={3}
-                />
+                <MapViewDirections
+                       origin={{ latitude: userLatitude, longitude: userLongitude }}
+                       destination={{ latitude: latitude, longitude: longitude }}
+                            apikey={GOOGLE_MAP_KEY}
+                            strokeWidth={5}
+                            strokeColor="blue"
+                            mode="DRIVING"
+                        />
             </MapView>
 
             {/* Bus Details */}

@@ -4,7 +4,10 @@ import {
   Alert, Image, TouchableOpacity
 } from "react-native";
 import * as Location from "expo-location";
-import { GOOGLE_MAP_KEY } from "../constant/googlemapkey";
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
+const BASE_URL =Constants.expoConfig.extra.BASE_URL;
+
 
 const FARE_PER_KM = 1.53; // Fare per KM
 
@@ -25,17 +28,17 @@ const BusListScreen = ({ route, navigation }) => {
   // ✅ Fetch Nearby Buses
   const fetchNearbyBuses = async () => {
     try {
-      const apiUrl = "http://192.168.1.114:8080/users/nearby";
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission Denied", "Enable location to proceed.");
-        return;
-      }
+      const apiUrl = `${BASE_URL}/users/nearby`;
+      // let { status } = await Location.requestForegroundPermissionsAsync();
+      // if (status !== "granted") {
+      //   Alert.alert("Permission Denied", "Enable location to proceed.");
+      //   return;
+      // }
 
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = currentLocation.coords;
+      // let currentLocation = await Location.getCurrentPositionAsync({});
+      // const { latitude, longitude } = currentLocation.coords;
 
-      const response = await fetch(`${apiUrl}?latitude=${latitude}&longitude=${longitude}&radius=3`);
+      const response = await fetch(`${apiUrl}?latitude=${userLatitude}&longitude=${userLongitude}&radius=30`);
       const data = await response.json();
 
       if (Array.isArray(data)) {

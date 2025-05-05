@@ -2,10 +2,11 @@ import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "rea
 import React, { useState, useEffect, useRef } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { GOOGLE_MAP_KEY } from "../constant/googlemapkey";
 import * as Location from 'expo-location';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import Constants from 'expo-constants';
+const GOOGLE_MAP_KEY = Constants.expoConfig.extra.googleMapKey;
 
 const From = ({ navigation }) => {
     const [location, setLocation] = useState(null);
