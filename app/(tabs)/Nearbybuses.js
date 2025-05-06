@@ -127,6 +127,7 @@ const BusListScreen = ({ route, navigation }) => {
                     destinationLongitude,
                     eta: item.eta,
                     distance,
+                    duration
                   });
                 }}
                 style={styles.card}
