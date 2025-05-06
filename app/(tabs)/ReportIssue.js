@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -13,14 +19,28 @@ const ReportIssueScreen = () => {
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false, // ✅ disables cropping
       quality: 1,
     });
 
     if (!result.canceled) {
-      setImage(result.uri);
+      setImage(result.assets[0].uri); // ✅ result.assets is needed in new Expo SDKs
     }
+  };
+
+  const handleSubmit = () => {
+    if (!name || !mobile || !description ) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    Alert.alert("Thank You", "Thanks for your feedback! \n We will resolve the problem as soon as possible");
+
+    // ✅ Reset all fields
+    setName("");
+    setMobile("");
+    setDescription("");
+    setImage(null);
   };
 
   return (
@@ -56,7 +76,7 @@ const ReportIssueScreen = () => {
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.submitButton}>
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitText}>Submit</Text>
       </TouchableOpacity>
     </View>

@@ -119,6 +119,7 @@ function HelpFlow() {
   return (
     <HelpStack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
       <HelpStack.Screen name="HelpSupport" component={HelpSupport} options={{ title: "Help & Support" }} />
+      <HelpStack.Screen name="EmergencyScreen" component={EmergencyScreen} />
     </HelpStack.Navigator>
   );
 }

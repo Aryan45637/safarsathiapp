@@ -12,11 +12,13 @@ import {
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native'; // ✅ Add this
 import EmergencyScreen from './EmergencyScreen';
+import Destination from './Destination';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+
 
 const HelpSupport = () => {
   const navigation = useNavigation(); // ✅ navigation hook
@@ -26,6 +28,7 @@ const HelpSupport = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedIndex(expandedIndex === index ? null : index);
   };
+  
 
   const handleCallSupport = () => {
     Linking.openURL('tel:+911234567890');
